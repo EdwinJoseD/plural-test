@@ -1,0 +1,45 @@
+# Dockerfile.dev - Para desarrollo
+FROM node:18-alpine
+
+# Instalar herramientas de desarrollo
+RUN apk add --no-cache git
+
+# Crear directorio de la aplicación
+WORKDIR /usr/src/app
+
+# Crear usuario para desarrollo
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodeuser -u 1001
+
+# Copiar archivos de dependencias y configuración de TypeScript
+COPY package*.json ./
+COPY tsconfig*.json ./
+
+# Instalar todas las dependencias (incluyendo dev) sin ejecutar scripts
+RUN npm install --ignore-scripts
+
+# Copiar código fuente antes de ejecutar build
+COPY . .
+
+# Ejecutar build de TypeScript si es necesario (opcional para desarrollo)
+# RUN npm run build
+
+# Crear directorios necesarios
+RUN mkdir -p /usr/src/app/data /usr/src/app/logs /usr/src/app/uploads /usr/src/app/tmp
+
+# Asignar permisos
+RUN chown -R nodeuser:nodejs /usr/src/app
+
+# Cambiar a usuario de desarrollo
+USER nodeuser
+
+# Exponer puerto de desarrollo
+EXPOSE 3000
+EXPOSE 9229
+
+# Variables de entorno para desarrollo
+ENV NODE_ENV=development
+ENV PORT=3000
+
+# Comando de desarrollo con nodemon y debugging
+CMD ["npm", "run", "dev"]

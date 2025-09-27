@@ -1,0 +1,238 @@
+services:
+# Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mi_app_db
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+      - ./database/backups:/backups
+    networks:
+      - dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d mi_app_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis para caché y sesiones
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - dev-network
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+
+  # Aplicación Node.js
+  app:
+    build:
+      context: .
+      dockerfile: DockerFile.dev
+    container_name: plural-test
+    ports:
+      - "3000:3000"     # Puerto de la aplicación
+      - "9229:9229"     # Puerto para debugging
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=mi_app_db
+      - DB_USER=dev_user
+      - DB_PASSWORD=dev_password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=mi_jwt_secret_dev
+    volumes:
+      # Hot reload - montar código fuente
+      - .:/usr/src/app
+      - /usr/src/app/node_modules  # Evitar sobreescribir node_modules
+      # Volúmenes para datos persistentes
+      - app-data:/usr/src/app/data
+      - app-logs:/usr/src/app/logs
+      - app-uploads:/usr/src/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dev-network
+    restart: unless-stopped
+    # Comando personalizado para desarrollo
+    command: npm run dev
+
+  # pgAdmin para administrar PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-dev
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@localhost.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - dev-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Redis Commander para administrar Redis
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander-dev
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      HTTP_USER: admin
+      HTTP_PASSWORD: admin123
+    ports:
+      - "8081:8081"
+    networks:
+      - dev-network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # Mailhog para testing de emails
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog-dev
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # Puerto SMTP
+      - "8025:8025"  # Puerto web UI
+    networks:
+      - dev-network
+
+  # Opcional: Elasticsearch para búsquedas avanzadas
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+  #   container_name: elasticsearch-dev
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   volumes:
+  #     - elasticsearch_data:/usr/share/elasticsearch/data
+  #   networks:
+  #     - dev-network
+
+  # Opcional: MongoDB como base de datos NoSQL
+  # mongodb:
+  #   image: mongo:6
+  #   container_name: mongodb-dev
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: admin123
+  #     MONGO_INITDB_DATABASE: mi_app_mongo
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #     - ./database/mongo-init:/docker-entrypoint-initdb.d:ro
+  #   networks:
+  #     - dev-network
+
+  # Opcional: Nginx como proxy reverso
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nginx-dev
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/sites:/etc/nginx/conf.d:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - dev-network
+
+  # Opcional: RabbitMQ para colas de mensajes
+  # rabbitmq:
+  #   image: rabbitmq:3-management-alpine
+  #   container_name: rabbitmq-dev
+  #   restart: unless-stopped
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: admin
+  #     RABBITMQ_DEFAULT_PASS: admin123
+  #   ports:
+  #     - "5672:5672"   # Puerto AMQP
+  #     - "15672:15672" # Management UI
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   networks:
+  #     - dev-network
+
+  # Opcional: MinIO para almacenamiento de archivos (S3-compatible)
+  # minio:
+  #   image: minio/minio:latest
+  #   container_name: minio-dev
+  #   restart: unless-stopped
+  #   environment:
+  #     MINIO_ROOT_USER: minioadmin
+  #     MINIO_ROOT_PASSWORD: minioadmin123
+  #   ports:
+  #     - "9000:9000"
+  #     - "9001:9001"
+  #   volumes:
+  #     - minio_data:/data
+  #   networks:
+  #     - dev-network
+  #   command: server /data --console-address ":9001"
+
+# Volúmenes nombrados
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  app-data:
+    driver: local
+  app-logs:
+    driver: local
+  app-uploads:
+    driver: local
+
+# Red de desarrollo
+networks:
+  dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

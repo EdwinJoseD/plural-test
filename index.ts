@@ -4,11 +4,12 @@ import app from './src/config/app';
 import { logger } from './src/config/logger/logger';
 import { SwaggerSpec } from './src/config/swagger/swagger';
 import { HandlerException } from './src/config/handlerException/handlerException';
+import { connectDB } from './src/config/database/connection.sequelize';
 
 const port = process.env.PORT || 3000;
 
 declare global {
-	var log: Logger;
+  var log: Logger;
 }
 
 global.log = logger;
@@ -17,6 +18,8 @@ app.use(HandlerException);
 
 SwaggerSpec(app);
 
+connectDB();
+
 app.listen(port, () => {
-	log.info(`[server]: Server is running at http://localhost:${port}`);
+  log.info(`[server]: Server is running at http://localhost:${port}`);
 });

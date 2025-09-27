@@ -4,8 +4,9 @@ const { URI_AUTH, RETRY_NUMBER, RETRY_TIME }: any = process.env;
 import axiosRetry from 'axios-retry';
 
 import { HttpCode } from '../response.type';
-import {retryCondition, rejected, onFullfilled} from "./axiosFunctions";
+import { retryCondition, rejected, onFullfilled } from './axiosFunctions';
 import { ValidateEndpointRetry, ValidateErrorEndpoint } from './axios.type';
+import { logger } from '@/config/logger/logger';
 
 /**
  * Arreglo de objetos con la url y el status de error a validar de acuerdo a un endpoint
@@ -15,16 +16,17 @@ export const validateError: Array<ValidateErrorEndpoint> = [
 ];
 
 /**
-* Arreglo de objetos con la url y metodo del endpoint para reintentar en caso de error
-**/
-export const exceptionRetry: Array<ValidateEndpointRetry> = [
-];
+ * Arreglo de objetos con la url y metodo del endpoint para reintentar en caso de error
+ **/
+export const exceptionRetry: Array<ValidateEndpointRetry> = [];
 
-axiosRetry(axios, { retries: RETRY_NUMBER, retryDelay: (retryCount) => {
-    log.info("Intento servicio: %s", retryCount)
+axiosRetry(axios, {
+  retries: RETRY_NUMBER,
+  retryDelay: retryCount => {
+    logger.info('Intento servicio: %s', retryCount);
     return retryCount * RETRY_TIME;
   },
-  retryCondition: retryCondition
+  retryCondition: retryCondition,
 });
 
 axios.interceptors.response.use(onFullfilled, rejected);

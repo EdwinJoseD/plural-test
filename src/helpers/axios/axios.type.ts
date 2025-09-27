@@ -4,10 +4,9 @@
  * @property {number} - Es el status de error del endpoint
  */
 export type ValidateErrorEndpoint = {
-    url: string;
-    status: number;
-}
-
+  url: string;
+  status: number;
+};
 
 /**
  * @type {object} ValidateEndpointRetry - Estructura de endpoint validar reintentos
@@ -15,15 +14,15 @@ export type ValidateErrorEndpoint = {
  * @property {string} - Es el metodo http del endpoint
  */
 export type ValidateEndpointRetry = {
-    url: string;
-    method: string;
-}
+  url: string;
+  method: string;
+};
 
 /**
  *  @type {object} DataResponse - Estructura de respuesta capturada de un error
  *  @property {object} - Datos de respuesta capturado
  **/
 export type DataResponse<T> = {
-    data: T;
-    mapError?: boolean
-}
+  data: T;
+  mapError?: boolean;
+};
