@@ -33,7 +33,8 @@
       "@/models/*": ["src/models/*"],
       "@/modules/*": ["src/modules/*"],
       "@/middleware/*": ["src/middleware/*"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
   "include": [
     "src/**/*"

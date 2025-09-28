@@ -83,3 +83,10 @@ export const MapErrorRequest = (req: any): any => {
     request_state: req.error_detailed_message[0].request_state,
   };
 };
+
+export type ResponsePaginated<T> = {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  items: T[];
+};

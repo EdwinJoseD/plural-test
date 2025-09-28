@@ -12,12 +12,12 @@ export enum TaskPriority {
   URGENT = 'urgent',
 }
 
-export interface TasksType {
+export type TasksType = {
   id: string;
   title: string;
   description?: string;
-  status: TaskStatus;
-  priority: TaskPriority;
+  status?: TaskStatus;
+  priority?: TaskPriority;
   projectId?: string;
   assignedTo?: string;
   createdBy?: string;
@@ -27,13 +27,28 @@ export interface TasksType {
   actualHours?: number;
   createdAt?: Date;
   updatedAt?: Date;
-}
+};
 
-export type TasksCreationAttributes = Omit<
-  TasksType,
-  'id' | 'createdAt' | 'updatedAt'
->;
+export type TaskFilter = {
+  page: number;
+  limit: number;
+  fieldName?: keyof TasksType;
+  fieldValue?: string;
+  fieldSort?: keyof TasksType;
+  valueSort?: 'ASC' | 'DESC';
+};
 
-export type TasksUpdateAttributes = Partial<
-  Omit<TasksType, 'id' | 'createdAt' | 'updatedAt'>
->;
+export type CreateTaskDTO = {
+  title: string;
+  description?: string;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  projectId?: string;
+  assignedTo?: string;
+  createdBy?: string;
+  dueDate?: Date;
+  estimatedHours?: number;
+  actualHours?: number;
+};
+
+export type UpdateTaskDTO = Partial<CreateTaskDTO>;

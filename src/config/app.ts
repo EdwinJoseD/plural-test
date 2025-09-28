@@ -11,6 +11,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { HealthCheck } from './healthCheck/healthCheck';
 import { AuthRoutes } from '@/modules/auth/routes';
+import { TasksRoutes } from '@/modules/tasks/routes';
 
 const { PREFIX }: any = process.env;
 
@@ -53,5 +54,6 @@ app.get(PREFIX + '/ping', (req, res) => {
 const apiPrefix = '/api';
 app.use('/healthcheck', HealthCheck);
 app.use(PREFIX + apiPrefix + '/auth', AuthRoutes);
+app.use(PREFIX + apiPrefix + '/tasks', TasksRoutes);
 
 export default app;

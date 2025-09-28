@@ -5,3 +5,13 @@ export type TaskCommentType = {
   content: string;
   createdAt?: Date;
 };
+
+export type CreateTaskCommentDTO = {
+  taskId: string;
+  userId: string;
+  content: string;
+};
+
+export type UpdateTaskCommentDTO = {
+  content?: string;
+};

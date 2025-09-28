@@ -1,9 +1,9 @@
 import { sequelize } from '@/config/database/connection.sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import { Projects } from '../projects/projects.type';
+import { ProjectsType } from '../projects/projects.type';
 import { UserModel } from '../users/user.models';
 
-const projects = sequelize.define<Model<Projects>>(
+const projects = sequelize.define<Model<ProjectsType>>(
   'projects',
   {
     id: {

@@ -5,7 +5,7 @@ export enum ProjectStatus {
   CANCELLED = 'cancelled',
 }
 
-export type Projects = {
+export type ProjectsType = {
   id: string;
   name: string;
   description: string;
