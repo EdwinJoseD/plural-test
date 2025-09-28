@@ -13,6 +13,7 @@ import { HealthCheck } from './healthCheck/healthCheck';
 import { AuthRoutes } from '@/modules/auth/routes';
 import { TasksRoutes } from '@/modules/tasks/routes';
 import { ReportRoutes } from '@/modules/reports/routes';
+import { NotificationsRoutes } from '@/modules/notifications/routes';
 
 const { PREFIX }: any = process.env;
 
@@ -57,5 +58,6 @@ app.use('/healthcheck', HealthCheck);
 app.use(PREFIX + apiPrefix + '/auth', AuthRoutes);
 app.use(PREFIX + apiPrefix + '/tasks', TasksRoutes);
 app.use(PREFIX + apiPrefix + '/reports', ReportRoutes);
+app.use(PREFIX + apiPrefix + '/notifications', NotificationsRoutes);
 
 export default app;

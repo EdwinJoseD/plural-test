@@ -160,12 +160,4 @@ CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
 CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_time_entries_updated_at BEFORE UPDATE ON time_entries
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_attachments_updated_at BEFORE UPDATE ON attachments
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_notifications_updated_at BEFORE UPDATE ON notifications
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 

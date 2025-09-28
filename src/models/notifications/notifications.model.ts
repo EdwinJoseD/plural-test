@@ -43,10 +43,14 @@ const notification = sequelize.define<Model<NotificationType>>(
       defaultValue: false,
       field: 'is_read',
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      field: 'created_at',
+    },
   },
   {
-    timestamps: true,
-    createdAt: 'created_at',
+    timestamps: false,
     tableName: 'notifications',
   }
 );
