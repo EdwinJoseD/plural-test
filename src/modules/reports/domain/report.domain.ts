@@ -384,4 +384,21 @@ export class ReportDomain implements IReportDomain {
       throw new AppError({ message: 'Error exporting tasks' });
     }
   }
+
+  async getProjectsStatisticsReport(
+    projectId?: string,
+    includeInactive?: boolean
+  ) {
+    try {
+      return this.dashboardRepository.getProjectStatisticsReport(
+        projectId,
+        includeInactive
+      );
+    } catch (error: any) {
+      logger.error('Error in get ProjectsStatisticsReport %s', error.message);
+      throw new AppError({
+        message: 'Error generating projects statistics report',
+      });
+    }
+  }
 }

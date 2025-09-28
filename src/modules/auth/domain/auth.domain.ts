@@ -4,13 +4,12 @@ import {
   UserType,
 } from '@/models/users/users.type';
 import { AuthRepository } from '../repository/auth.repository';
-import { IAuthDomain } from './auth.interface.domain';
 import { mapperGeneric } from '@/helpers/mapper/mapper.helper';
 import { AppError, createToken } from '@/helpers';
 import { logger } from '@/config/logger/logger';
 import { comparePassword, hashPassword } from '@/helpers/bcrypt/bcrypt.helpers';
 
-export class AuthDomain implements IAuthDomain {
+export class AuthDomain {
   private readonly repository: AuthRepository;
   constructor() {
     this.repository = new AuthRepository();

@@ -531,4 +531,132 @@ export class DashboardRepository {
     const tasks = await TasksModel.findAll();
     return tasks.map(task => task.toJSON());
   }
+
+  async getProjectStatisticsReport(
+    projectId?: string,
+    includeInactive = false
+  ) {
+    let projectFilter = '';
+    let params: any = {};
+
+    if (projectId) {
+      projectFilter = 'AND p.id = :projectId';
+      params.projectId = projectId;
+    }
+
+    if (!includeInactive) {
+      projectFilter += " AND p.status != 'archived'";
+    }
+
+    const query = `
+    SELECT 
+      p.id,
+      p.name as "projectName",
+      p.status as "projectStatus",
+      p.start_date as "startDate",
+      p.end_date as "endDate",
+      p.budget,
+      p.created_at as "createdAt",
+      
+      -- Información del owner
+      u.username as "ownerUsername",
+      u.first_name as "ownerFirstName",
+      u.last_name as "ownerLastName",
+      
+      -- Estadísticas de tareas
+      COUNT(t.id) as "totalTasks",
+      COUNT(CASE WHEN t.status = 'pending' THEN 1 END) as "pendingTasks",
+      COUNT(CASE WHEN t.status = 'in_progress' THEN 1 END) as "inProgressTasks", 
+      COUNT(CASE WHEN t.status = 'completed' THEN 1 END) as "completedTasks",
+      COUNT(CASE WHEN t.status = 'cancelled' THEN 1 END) as "cancelledTasks",
+      
+      -- Estadísticas de tiempo
+      COALESCE(SUM(t.estimated_hours), 0) as "totalEstimatedHours",
+      COALESCE(SUM(t.actual_hours), 0) as "totalActualHours",
+      COALESCE(SUM(CASE WHEN t.status = 'completed' THEN t.actual_hours END), 0) as "completedActualHours",
+      COALESCE(SUM(CASE WHEN t.status IN ('pending', 'in_progress') THEN t.estimated_hours END), 0) as "remainingEstimatedHours",
+      
+      -- Estadísticas de prioridad
+      COUNT(CASE WHEN t.priority = 'low' THEN 1 END) as "lowPriorityTasks",
+      COUNT(CASE WHEN t.priority = 'medium' THEN 1 END) as "mediumPriorityTasks",
+      COUNT(CASE WHEN t.priority = 'high' THEN 1 END) as "highPriorityTasks",
+      COUNT(CASE WHEN t.priority = 'urgent' THEN 1 END) as "urgentPriorityTasks",
+      
+      -- Tareas vencidas
+      COUNT(CASE WHEN t.due_date < NOW() AND t.status NOT IN ('completed', 'cancelled') THEN 1 END) as "overdueTasks",
+      
+      -- Progreso y métricas
+      ROUND(
+        CASE 
+          WHEN COUNT(t.id) > 0 
+          THEN (COUNT(CASE WHEN t.status = 'completed' THEN 1 END)::NUMERIC / COUNT(t.id)::NUMERIC) * 100 
+          ELSE 0 
+        END, 2
+      ) as "completionPercentage",
+      
+      ROUND(
+        CASE 
+          WHEN SUM(t.estimated_hours) > 0 
+          THEN (SUM(CASE WHEN t.status = 'completed' THEN t.actual_hours END)::NUMERIC / SUM(t.estimated_hours)::NUMERIC) * 100 
+          ELSE 0 
+        END, 2
+      ) as "timeCompletionPercentage",
+      
+      -- Eficiencia (tiempo real vs estimado para tareas completadas)
+      ROUND(
+        CASE 
+          WHEN SUM(CASE WHEN t.status = 'completed' THEN t.estimated_hours END) > 0 
+          THEN (SUM(CASE WHEN t.status = 'completed' THEN t.actual_hours END)::NUMERIC / 
+                SUM(CASE WHEN t.status = 'completed' THEN t.estimated_hours END)::NUMERIC) * 100 
+          ELSE 0 
+        END, 2
+      ) as "efficiencyPercentage",
+      
+      -- Miembros del equipo
+      COUNT(DISTINCT t.assigned_to) as "teamMembersCount",
+      COUNT(DISTINCT t.created_by) as "contributorsCount",
+      
+      -- Actividad reciente (últimos 7 días)
+      COUNT(CASE WHEN t.updated_at >= NOW() - INTERVAL '7 days' THEN 1 END) as "recentActivity",
+      COUNT(CASE WHEN t.completed_at >= NOW() - INTERVAL '7 days' THEN 1 END) as "recentCompletions",
+      
+      -- Duración del proyecto
+      CASE 
+        WHEN p.start_date IS NOT NULL AND p.end_date IS NOT NULL 
+        THEN EXTRACT(DAYS FROM p.end_date - p.start_date)
+        WHEN p.start_date IS NOT NULL 
+        THEN EXTRACT(DAYS FROM NOW() - p.start_date)
+        ELSE NULL 
+      END as "projectDurationDays",
+      
+      -- Estado del presupuesto (si hay tareas con horas)
+      CASE 
+        WHEN p.budget IS NOT NULL AND SUM(t.actual_hours) > 0
+        THEN ROUND((SUM(t.actual_hours) * 50)::NUMERIC, 2) -- Asumiendo $50/hora como ejemplo
+        ELSE NULL 
+      END as "estimatedCostSpent"
+      
+    FROM projects p
+    LEFT JOIN users u ON p.owner_id = u.id
+    LEFT JOIN tasks t ON p.id = t.project_id
+    WHERE 1=1 ${projectFilter}
+    GROUP BY 
+      p.id, p.name, p.status, p.start_date, p.end_date, p.budget, p.created_at,
+      u.username, u.first_name, u.last_name
+    ORDER BY 
+      CASE p.status 
+        WHEN 'active' THEN 1 
+        WHEN 'completed' THEN 2 
+        WHEN 'archived' THEN 3 
+        WHEN 'cancelled' THEN 4 
+      END,
+      "completionPercentage" DESC,
+      p.created_at DESC
+  `;
+
+    return await sequelize.query(query, {
+      type: QueryTypes.SELECT,
+      replacements: params,
+    });
+  }
 }

@@ -1,15 +1,15 @@
 import { NotificationsRepository } from '../repository/notifications.repository';
-import { INotificationsDomain } from './notifications.interface.domain';
 import { AppError } from '@/helpers';
 import { logger } from '@/config/logger/logger';
+import { NotificationType } from '@/models/notifications/notifications.type';
 
-export class NotificationsDomain implements INotificationsDomain {
+export class NotificationsDomain {
   private readonly repository: NotificationsRepository;
   constructor() {
     this.repository = new NotificationsRepository();
   }
 
-  async getAllNotifications(userId: string): Promise<any[]> {
+  async getAllNotifications(userId: string): Promise<NotificationType[]> {
     try {
       const notifications = await this.repository.findAllNotifications(userId);
       return notifications;
