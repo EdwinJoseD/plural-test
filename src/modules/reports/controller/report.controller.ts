@@ -30,3 +30,51 @@ ReportController.post(
     handleResponse(res, HttpCode.OK, result);
   }
 );
+
+ReportController.get(
+  '/user-ranking',
+  verifytoken,
+  verifyRoles([UserRole.ADMIN]),
+  async (req: Request, res: Response) => {
+    const reportDomain = new ReportDomain();
+    const result = await reportDomain.getUserRanking();
+    handleResponse(res, HttpCode.OK, result);
+  }
+);
+
+ReportController.get(
+  '/project-timeline',
+  verifytoken,
+  verifyRoles([UserRole.ADMIN]),
+  async (req: Request, res: Response) => {
+    const reportDomain = new ReportDomain();
+    const result = await reportDomain.getProjectTimeline();
+    handleResponse(res, HttpCode.OK, result);
+  }
+);
+
+ReportController.get(
+  '/workload-distribution',
+  verifytoken,
+  verifyRoles([UserRole.ADMIN]),
+  async (req: Request, res: Response) => {
+    const reportDomain = new ReportDomain();
+    const result = await reportDomain.getWorkloadReport();
+    handleResponse(res, HttpCode.OK, result);
+  }
+);
+
+ReportController.post(
+  '/export-data',
+  verifytoken,
+  async (req: Request, res: Response) => {
+    const reportDomain = new ReportDomain();
+    const result = await reportDomain.exportTasks();
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="tasks_export.csv"'
+    );
+    res.setHeader('Content-Type', 'text/csv');
+    handleResponse(res, HttpCode.OK, result);
+  }
+);

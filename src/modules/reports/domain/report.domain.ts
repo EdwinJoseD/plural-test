@@ -297,4 +297,91 @@ export class ReportDomain implements IReportDomain {
       throw new AppError({ message: 'Error generating report' });
     }
   }
+
+  async getUserRanking(): Promise<any> {
+    try {
+      const ranking =
+        await this.dashboardRepository.getUserProductivityReport();
+      return ranking;
+    } catch (error: any) {
+      logger.error('Error in getUserRanking: %s', error.message);
+      throw new AppError({ message: 'Error generating user ranking report' });
+    }
+  }
+
+  async getProjectTimeline(): Promise<any> {
+    try {
+      const timeline = await this.dashboardRepository.getTasksTimelineReport();
+      return timeline;
+    } catch (error: any) {
+      logger.error('Error in getProjectTimeline: %s', error.message);
+      throw new AppError({
+        message: 'Error generating project timeline report',
+      });
+    }
+  }
+
+  async getWorkloadReport(): Promise<any> {
+    try {
+      const workload = await this.dashboardRepository.getWorkloadReport();
+      return workload;
+    } catch (error: any) {
+      logger.error('Error in getWorkloadReport: %s', error.message);
+      throw new AppError({ message: 'Error generating workload report' });
+    }
+  }
+
+  async exportTasks(): Promise<string> {
+    try {
+      const tasks = await this.dashboardRepository.getAllTasks();
+      if (tasks.length === 0) {
+        throw new AppError({ message: 'No hay tareas para exportar' });
+      }
+
+      const headers = [
+        'id',
+        'title',
+        'description',
+        'status',
+        'priority',
+        'project_id',
+        'assigned_to',
+        'created_by',
+        'due_date',
+        'completed_at',
+        'estimated_hours',
+        'actual_hours',
+        'created_at',
+        'updated_at',
+      ];
+
+      const csvRows = [headers.join(',')];
+
+      for (const task of tasks) {
+        const row = [
+          task.id,
+          `"${(task.title || '').replace(/"/g, '""')}"`, // Escapar comillas dobles
+          `"${(task.description || '').replace(/"/g, '""')}"`,
+          task.status || '',
+          task.priority || '',
+          task.projectId || '',
+          task.assignedTo || '',
+          task.createdBy || '',
+          task.dueDate ? task.dueDate.toISOString() : '',
+          task.completedAt ? task.completedAt.toISOString() : '',
+          task.estimatedHours != null ? task.estimatedHours : '',
+          task.actualHours != null ? task.actualHours : '',
+          task.createdAt ? task.createdAt.toISOString() : '',
+          task.updatedAt ? task.updatedAt.toISOString() : '',
+        ];
+        csvRows.push(row.join(','));
+      }
+
+      const csvContent = csvRows.join('\n');
+      return Buffer.from(csvContent).toString('base64');
+    } catch (error: any) {
+      logger.error('Error in exportTasks: %s', error.message);
+      throw new AppError({ message: 'Error exporting tasks' });
+    }
+  }
 }

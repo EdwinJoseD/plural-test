@@ -496,4 +496,39 @@ export class DashboardRepository {
       order: [['created_at', 'DESC']],
     });
   }
+
+  // 13. REPORTE DE LINEA DE TIEMPO DE PROYECTOS
+  async getProjectTimelineReport() {
+    return await ProjectsModel.findAll({
+      attributes: [
+        'id',
+        'name',
+        'start_date',
+        'end_date',
+        'status',
+        [fn('COUNT', col('tasks.id')), 'totalTasks'],
+        [
+          literal(
+            'COUNT(CASE WHEN "tasks"."status" = \'completed\' THEN 1 END)'
+          ),
+          'completedTasks',
+        ],
+      ],
+      include: [
+        {
+          model: TasksModel,
+          as: 'tasks',
+          attributes: [],
+          required: false,
+        },
+      ],
+      group: ['projects.id'],
+      order: [['start_date', 'ASC']],
+    });
+  }
+
+  async getAllTasks() {
+    const tasks = await TasksModel.findAll();
+    return tasks.map(task => task.toJSON());
+  }
 }
