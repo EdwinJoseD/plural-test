@@ -14,6 +14,7 @@ import { AuthRoutes } from '@/modules/auth/routes';
 import { TasksRoutes } from '@/modules/tasks/routes';
 import { ReportRoutes } from '@/modules/reports/routes';
 import { NotificationsRoutes } from '@/modules/notifications/routes';
+import { UserRoutes } from '@/modules/users/routes';
 
 const { PREFIX }: any = process.env;
 
@@ -59,5 +60,6 @@ app.use(PREFIX + apiPrefix + '/auth', AuthRoutes);
 app.use(PREFIX + apiPrefix + '/tasks', TasksRoutes);
 app.use(PREFIX + apiPrefix + '/reports', ReportRoutes);
 app.use(PREFIX + apiPrefix + '/notifications', NotificationsRoutes);
+app.use(PREFIX + apiPrefix + '/users', UserRoutes);
 
 export default app;
