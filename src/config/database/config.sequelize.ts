@@ -54,6 +54,7 @@ const config: DatabaseConfig = {
     password: process.env.DB_PASSWORD!,
     database: process.env.DB_NAME!,
     host: process.env.DB_HOST!,
+    schema: process.env.DB_SCHEMA!,
     port: parseInt(process.env.DB_PORT || '5432'),
     dialect: 'postgres',
     dialectOptions: {

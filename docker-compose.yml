@@ -1,16 +1,17 @@
 services:
-# Base de datos PostgreSQL
+  # Base de datos PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: postgres-dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: mi_app_db
-      POSTGRES_USER: dev_user
-      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: plural_db
+      POSTGRES_USER: plural_user
+      POSTGRES_PASSWORD: plural_password
+      POSTGRES_SCHEMA: plural_schema
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d:ro
@@ -18,7 +19,11 @@ services:
     networks:
       - dev-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev_user -d mi_app_db"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost -p 5432",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -44,7 +49,6 @@ services:
       retries: 3
       start_period: 10s
 
-
   # Aplicación Node.js
   app:
     build:
@@ -52,23 +56,24 @@ services:
       dockerfile: DockerFile.dev
     container_name: plural-test
     ports:
-      - "3000:3000"     # Puerto de la aplicación
-      - "9229:9229"     # Puerto para debugging
+      - "3000:3000" # Puerto de la aplicación
+      - "9229:9229" # Puerto para debugging
     environment:
       - NODE_ENV=development
       - PORT=3000
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=mi_app_db
-      - DB_USER=dev_user
-      - DB_PASSWORD=dev_password
+      - DB_NAME=plural_db
+      - DB_USER=plural_user
+      - DB_PASSWORD=plural_password
+      - DB_SCHEMA=plural_schema
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - JWT_SECRET=mi_jwt_secret_dev
     volumes:
       # Hot reload - montar código fuente
       - .:/usr/src/app
-      - /usr/src/app/node_modules  # Evitar sobreescribir node_modules
+      - /usr/src/app/node_modules # Evitar sobreescribir node_modules
       # Volúmenes para datos persistentes
       - app-data:/usr/src/app/data
       - app-logs:/usr/src/app/logs
@@ -92,7 +97,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@localhost.com
       PGADMIN_DEFAULT_PASSWORD: admin123
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "5050:80"
     volumes:
@@ -126,8 +131,8 @@ services:
     container_name: mailhog-dev
     restart: unless-stopped
     ports:
-      - "1025:1025"  # Puerto SMTP
-      - "8025:8025"  # Puerto web UI
+      - "1025:1025" # Puerto SMTP
+      - "8025:8025" # Puerto web UI
     networks:
       - dev-network
 
