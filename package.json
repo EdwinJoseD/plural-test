@@ -56,6 +56,8 @@
     "class-validator": "^0.14.2",
     "connect-timeout": "^1.9.1",
     "cors": "^2.8.5",
+    "csv-parse": "^6.1.0",
+    "csv-parser": "^3.2.0",
     "detect-file-type": "^0.2.8",
     "dotenv": "^17.2.2",
     "dotenv-flow": "^4.1.0",

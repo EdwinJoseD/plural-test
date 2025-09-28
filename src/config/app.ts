@@ -12,6 +12,7 @@ import morgan from 'morgan';
 import { HealthCheck } from './healthCheck/healthCheck';
 import { AuthRoutes } from '@/modules/auth/routes';
 import { TasksRoutes } from '@/modules/tasks/routes';
+import { ReportRoutes } from '@/modules/reports/routes';
 
 const { PREFIX }: any = process.env;
 
@@ -55,5 +56,6 @@ const apiPrefix = '/api';
 app.use('/healthcheck', HealthCheck);
 app.use(PREFIX + apiPrefix + '/auth', AuthRoutes);
 app.use(PREFIX + apiPrefix + '/tasks', TasksRoutes);
+app.use(PREFIX + apiPrefix + '/reports', ReportRoutes);
 
 export default app;

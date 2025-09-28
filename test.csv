@@ -1,0 +1,6 @@
+title,description,status,priority,project_id,assigned_to,created_by,due_date,completed_at,estimated_hours,actual_hours
+"Implementar autenticación","Desarrollar sistema de login y registro","pending","high","650e8400-e29b-41d4-a716-446655440002","550e8400-e29b-41d4-a716-446655440002","550e8400-e29b-41d4-a716-446655440003","2024-12-31","","40","38"
+"Diseñar base de datos","Crear esquema de base de datos","completed","medium","650e8400-e29b-41d4-a716-446655440002","","550e8400-e29b-41d4-a716-446655440003","2024-11-30","2024-11-25","20","18"
+"Testing de API","Escribir tests unitarios para endpoints","in_progress","medium","650e8400-e29b-41d4-a716-446655440002","550e8400-e29b-41d4-a716-446655440004","550e8400-e29b-41d4-a716-446655440003","2024-12-15","","30","15"
+"Documentación","Crear documentación técnica","pending","low","650e8400-e29b-41d4-a716-446655440002","","550e8400-e29b-41d4-a716-446655440003","","","10",""
+"Optimización de rendimiento","Mejorar velocidad de consultas","cancelled","urgent","650e8400-e29b-41d4-a716-446655440002","550e8400-e29b-41d4-a716-446655440002","550e8400-e29b-41d4-a716-446655440003","2024-10-15","","25","0"

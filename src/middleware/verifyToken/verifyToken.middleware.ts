@@ -32,7 +32,7 @@ export const verifytoken = async (
     req.body.userToken = token;
     req.body.user = decodedToken.user;
     req.body.userEmail = decodedToken.user.email;
-    req.body.roles = decodedToken.user.role;
+    req.body.rol = decodedToken.user.role;
 
     const validateToken = await verifyToken(token);
 
